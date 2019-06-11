@@ -1,0 +1,72 @@
+params:
+  api_vrrp_id: (( params "Please select a unique VRRP ID (a number between 1 and 255) for your API load balancer" ))
+  api_vrrp_ip: (( params "Please select an unused IPv4 address for your API load balancer" ))
+
+instance_groups:
+  - name:      lb
+    instances: (( grab params.load_balancer_instances || 2 ))
+    azs:       (( grab params.availability_zones || meta.default.azs ))
+    vm_resources:
+      cpu: (( grab params.load_balancer_cpus || 2 ))
+      ram: (( grab params.load_balancer_ram  || 2048 ))
+      ephemeral_disk_size: 2048
+    stemcell: default
+    networks:
+      - name: (( grab params.load_balancer_network || params.k8s_network || "default" ))
+
+    jobs:
+      - name: lb
+        release: k8s
+        properties:
+          vrrp:
+            id: (( grab params.vrrp_id ))
+            ip: (( grab params.vrrp_ip ))
+
+  - name:      control
+    instances: (( grab params.control_instances || 3 ))
+    azs:       (( grab params.availability_zones || meta.default.azs ))
+    vm_resources:
+      cpu: (( grab params.control_node_cpus || grab params.worker_node_cpus || 2 ))
+      ram: (( grab params.control_node_ram  || grab params.worker_node_ram  || 2048 ))
+      ephemeral_disk_size: 8192
+    persistent_disk: (( grab params.control_node_disk || params.worker_node_disk || 10_240 ))
+    stemcell:  default
+    networks:
+      - name: (( grab params.control_node_network || params.worker_node_network || params.k8s_network || "default" ))
+
+    jobs:
+      - name: control
+        release: k8s
+        properties:
+          .: (( inject meta.control ))
+          kubelet:
+            instance-groups:
+              - (( concat "node."    instance_groups.node.networks[0].name ))
+              - (( concat "control." instance_groups.control.networks[0].name ))
+          apiserver:
+            additional-sans:
+              - (( grab params.api_vrrp_ip ))
+
+      - name: net-flannel
+        release: k8s
+      - name: runtime-runc
+        release: k8s
+        properties:
+          cni: flannel
+      - name: kubelet
+        release: k8s
+        properties:
+          apiserver: (( grab params.api_vrrp_ip ))
+          master: true
+
+      - name: jumpbox
+        release: k8s
+      - name: smoke-tests
+        release: k8s
+
+
+  - name: node
+    jobs:
+      - name: kubelet
+        properties:
+          apiserver: (( grab params.api_vrrp_ip ))

@@ -1,0 +1,37 @@
+#!/bin/bash
+shopt -s nullglob
+set -eu
+
+# Genesis Kit `blueprint' Hook
+#
+# This script outputs the list of merge files needed to support the desired
+# feature set selected by the environment parameter file.  As generated, it
+# lists all *.yml files in the base, then all *.yml files in each detected
+# feature directory, in the order the features are specified in the environment
+# yml file.  If finer control is desired, add logic around the wants_kit_feature()
+# function (takes a feature as a string, returns exit code 0 if present, non-
+# zero exit code otherwise).
+
+
+validate_features separate-etcd \
+                  separate-control-plane
+
+declare -a manifests
+manifests+=( manifests/base.yml )
+
+if want_feature separate-control-plane; then
+	manifests+=( manifests/seaparate-control-plane.yml )
+
+	if want_feature separate-etcd; then
+		manifests+=( manifests/seaparate-etcd.yml )
+	fi
+
+elif want_feature separate-etcd; then
+	echo >&2 "The 'separate-etcd' feature only makes sense when paired with 'separate-control-plane'"
+	exit 1
+
+else
+	manifests+=( manifests/all-in-one.yml )
+fi
+
+echo ${manifests[@]}

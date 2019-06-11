@@ -1,0 +1,25 @@
+params:
+  cluster_service_ip: (( param "Please provide a Service IP for your Kubernetes cluster" ))
+
+instance_groups:
+  - name: node
+    jobs:
+      - (( prepend ))
+      - name: etcd
+        release: k8s
+      - name: control
+        release: k8s
+        properties:
+          .: (( inject meta.control ))
+          kubelet:
+            instance-groups:
+              - (( concat "node." instance_groups.node.networks[0].name ))
+          apiserver:
+            additional-sans:
+              - (( grab params.cluster_service_ip ))
+
+      - (( append ))
+      - name: jumpbox
+        release: k8s
+      - name: smoke-tests
+        release: k8s

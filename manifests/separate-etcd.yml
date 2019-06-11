@@ -1,0 +1,16 @@
+instance_groups:
+  - name:      etcd
+    instances: (( grab params.etcd_instances || 3 ))
+    azs:       (( grab params.availability_zones || meta.default.azs ))
+    vm_resources:
+      cpu: (( grab params.etcd_cpus || 2 ))
+      ram: (( grab params.etcd_ram  || 2048 ))
+      ephemeral_disk_size: 8192
+    persistent_disk: (( grab params.etcd_disk || 20_480 ))
+    stemcell:  default
+    networks:
+      - name: (( grab params.etcd_network || params.k8s_network || "default" ))
+
+    jobs:
+      - name: etcd
+        release: k8s

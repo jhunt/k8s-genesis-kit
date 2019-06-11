@@ -1,0 +1,70 @@
+params:
+  dns_service_ip: (( param "Please provide a Service IP for the Kubernetes DNS subsystem" ))
+  nodes_cidr:     (( param "Please provide a network CIDR (i.e. 10.0.0.0/24) that summarizes your Kubernetes node network" ))
+  services_cidr:  (( param "Please provide a service CIDR (i.e. 10.1.0.0/24) for assigning Kubernetes Service IPs from, dynamically" ))
+  pods_cidr:      (( param "Please provide a pod CIDR (i.e. 10.244.0.0/16) for assigning POD IPs from, dynamically.  This CIDR should be large; ideally a /20 or larger." ))
+
+meta:
+  default:
+    azs: [z1,z2,z3]
+
+  control:
+    cluster:
+      name: (( grab params.name ))
+      dns:  (( grab params.dns_service_ip ))
+    networks:
+      nodes:    (( grab params.nodes_cidr ))
+      services: (( grab params.services_cidr ))
+      pods:     (( grab params.pods_cidr ))
+    encryption:
+      key: (( vault meta.vault "/encryption:key" ))
+    tls:
+      ca:
+        certificate: (( vault meta.vault "/tls/mutual/ca:certificate" ))
+        key:         (( vault meta.vault "/tls/mutual/ca:key" ))
+      sa:
+        certificate: (( vault meta.vault "/tls/signing/ca:certificate" ))
+        key:         (( vault meta.vault "/tls/signing/ca:key" ))
+
+
+instance_groups:
+  - name:      node
+    instances: (( grab params.worker_node_instances || 1 ))
+    azs:       (( grab params.availability_zones || meta.default.azs ))
+    vm_resources:
+      cpu: (( grab params.worker_node_cpus || 2 ))
+      ram: (( grab params.worker_node_ram  || 8192 ))
+      ephemeral_disk_size: 8192
+    persistent_disk: (( grab params.worker_node_disk || 10_240 ))
+    stemcell:  default
+    networks:
+      - name: (( grab params.worker_node_network || params.k8s_network || "default" ))
+
+    jobs:
+      - name: net-flannel
+        release: k8s
+      - name: runtime-runc
+        release: k8s
+        properties:
+          cni: flannel
+      - name: kubelet
+        release: k8s
+      - name: nfs
+        release: k8s
+
+update:
+  serial:            true
+  canaries:          1
+  max_in_flight:     1
+  max_errors:        1
+  canary_watch_time: 5000-600000
+  update_watch_time: 5000-600000
+
+stemcells:
+  - alias:   default
+    os:      (( grab params.stemcell_os      || "ubuntu-xenial" ))
+    version: (( grab params.stemcell_version || "latest" ))
+
+releases:
+  - name:    k8s
+    version: latest
