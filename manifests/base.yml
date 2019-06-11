@@ -16,6 +16,7 @@ meta:
       nodes:    (( grab params.nodes_cidr ))
       services: (( grab params.services_cidr ))
       pods:     (( grab params.pods_cidr ))
+      podmask:  (( grab params.pod_underlay_mask || "/24" ))
     encryption:
       key: (( vault meta.vault "/encryption:key" ))
     tls:
@@ -35,7 +36,7 @@ instance_groups:
       cpu: (( grab params.worker_node_cpus || 2 ))
       ram: (( grab params.worker_node_ram  || 8192 ))
       ephemeral_disk_size: 8192
-    persistent_disk: (( grab params.worker_node_disk || 10_240 ))
+    persistent_disk: (( grab params.worker_node_disk || 10240 ))
     stemcell:  default
     networks:
       - name: (( grab params.worker_node_network || params.k8s_network || "default" ))

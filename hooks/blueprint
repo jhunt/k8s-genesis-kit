@@ -14,17 +14,26 @@ set -eu
 
 
 validate_features separate-etcd \
-                  separate-control-plane
+                  separate-control-plane \
+                  separate-load-balancer
 
 declare -a manifests
 manifests+=( manifests/base.yml )
 
 if want_feature separate-control-plane; then
-	manifests+=( manifests/seaparate-control-plane.yml )
+	manifests+=( manifests/separate-control-plane.yml )
+
+	if want_feature separate-load-balancer; then
+		manifests+=( manifests/separate-load-balancer.yml )
+	fi
 
 	if want_feature separate-etcd; then
-		manifests+=( manifests/seaparate-etcd.yml )
+		manifests+=( manifests/separate-etcd.yml )
 	fi
+
+elif want_feature separate-load-balancer; then
+	echo >&2 "The 'separate-load-balancer' feature only makes sense when paired with 'separate-control-plane'"
+	exit 1
 
 elif want_feature separate-etcd; then
 	echo >&2 "The 'separate-etcd' feature only makes sense when paired with 'separate-control-plane'"

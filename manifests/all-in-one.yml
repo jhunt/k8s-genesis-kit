@@ -2,6 +2,7 @@ params:
   cluster_service_ip: (( param "Please provide a Service IP for your Kubernetes cluster" ))
 
 instance_groups:
+  - (( merge ))
   - name: node
     jobs:
       - (( prepend ))

@@ -1,0 +1,26 @@
+instance_groups:
+  - (( insert before "control" ))
+  - name:      lb
+    instances: (( grab params.load_balancer_instances || 2 ))
+    azs:       (( grab params.availability_zones || meta.default.azs ))
+    vm_resources:
+      cpu: (( grab params.load_balancer_cpus || 2 ))
+      ram: (( grab params.load_balancer_ram  || 2048 ))
+      ephemeral_disk_size: 2048
+    stemcell: default
+    networks:
+      - name: (( grab params.load_balancer_network || params.k8s_network || "default" ))
+
+    jobs:
+      - name: lb
+        release: k8s
+        properties:
+          vrrp:
+            id: (( grab params.api_vrrp_id ))
+            ip: (( grab params.api_vrrp_ip ))
+
+
+  - (( merge ))
+  - name: control
+    jobs:
+      - (( delete "lb" ))
