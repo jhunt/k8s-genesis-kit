@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Check for BOSH DNS
+if [[ $(bosh rc | spruce json | jq -r '.addons[] | select(.name == "bosh-dns")') == "" ]]; then
+  runtime_ok=no
+  describe "  #R{Errors were found} in your runtime-config:"
+  describe "    - #R{BOSH DNS is not in the runtime-config, which is required. Refer to}"
+  describe "      #R{'genesis man $GENESIS_ENVIRONMENT' for more info.}"
+  describe ""
+
+  describe "  runtime config [#R{FAILED}]"
+  exit 1
+fi
+
+describe "  runtime config [#G{OK}]"
+exit 0
