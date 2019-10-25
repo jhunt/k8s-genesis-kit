@@ -11,6 +11,8 @@ instance_groups:
       cpu: (( grab params.control_node_cpus || params.worker_node_cpus || 2 ))
       ram: (( grab params.control_node_ram  || params.worker_node_ram  || 2048 ))
       ephemeral_disk_size: 8192
+    vm_extensions:
+      - kubelet
     persistent_disk: (( grab params.control_node_disk || params.worker_node_disk || 10240 ))
     stemcell:  default
     networks:

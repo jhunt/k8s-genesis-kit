@@ -7,8 +7,10 @@ params:
 meta:
   default:
     azs: [z1,z2,z3]
+    cloud-provider: {}
 
   control:
+    cloud-provider: (( grab params.cloud-provider || meta.default.cloud-provider ))
     cluster:
       name: (( grab params.name ))
       dns:  (( grab params.dns_service_ip ))
@@ -32,6 +34,8 @@ instance_groups:
   - name:      node
     instances: (( grab params.worker_node_instances || 1 ))
     azs:       (( grab params.availability_zones || meta.default.azs ))
+    vm_extensions:
+      - kubelet
     vm_resources:
       cpu: (( grab params.worker_node_cpus || 2 ))
       ram: (( grab params.worker_node_ram  || 8192 ))
@@ -69,5 +73,5 @@ stemcells:
 releases:
   - name:    k8s
     version: 1.14.0
-    url:     https://github.com/jhunt/k8s-boshrelease/releases/download/v1.14.0/k8s-1.14.0.tgz
-    sha1:    7b44f480e635e751e70b344e68850433d9a81417
+    url:     https://github.com/jhunt/k8s-boshrelease/releases/download/v1.14.0-build.5/k8s-1.14.0-build.5.tgz
+    sha1:    117d6e0c20dec23e3611f47445aa6d5148c5c87e
