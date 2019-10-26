@@ -65,5 +65,3 @@ instance_groups:
       - name: kubelet
         properties:
           apiserver: (( grab params.api_vrrp_ip ))
-          labels:
-            node-role.kubernetes.io/worker: ""
