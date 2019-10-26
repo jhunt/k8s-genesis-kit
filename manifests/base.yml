@@ -72,6 +72,6 @@ stemcells:
 
 releases:
   - name:    k8s
-    version: 1.16.2-build.1
-    url:     https://github.com/jhunt/k8s-boshrelease/releases/download/v1.16.2-build.1/k8s-1.16.2-build.1.tgz
-    sha1:    63751be6624a40a5c8ed59e30217e38d49475495
+    version: 1.16.2-build.2
+    url:     https://github.com/jhunt/k8s-boshrelease/releases/download/v1.16.2-build.2/k8s-1.16.2-build.2.tgz
+    sha1:    49e102f4b48125d83d020bb4163895ec4d6d0ea8
