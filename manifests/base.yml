@@ -4,6 +4,8 @@ params:
   services_cidr:  (( param "Please provide a service CIDR (i.e. 10.1.0.0/24) for assigning Kubernetes Service IPs from, dynamically" ))
   pods_cidr:      (( param "Please provide a pod CIDR (i.e. 10.244.0.0/16) for assigning POD IPs from, dynamically.  This CIDR should be large; ideally a /20 or larger." ))
 
+  proxy_mode: iptables
+
 meta:
   default:
     azs: [z1,z2,z3]
@@ -12,8 +14,9 @@ meta:
   control:
     cloud-provider: (( grab params.cloud-provider || meta.default.cloud-provider ))
     cluster:
-      name: (( grab params.name ))
-      dns:  (( grab params.dns_service_ip ))
+      name:       (( grab params.name ))
+      dns:        (( grab params.dns_service_ip ))
+      proxy-mode: (( grab params.proxy_mode ))
     networks:
       nodes:    (( grab params.nodes_cidr ))
       services: (( grab params.services_cidr ))
@@ -72,6 +75,6 @@ stemcells:
 
 releases:
   - name:    k8s
-    version: 1.16.2-build.2
-    url:     https://github.com/jhunt/k8s-boshrelease/releases/download/v1.16.2-build.2/k8s-1.16.2-build.2.tgz
-    sha1:    49e102f4b48125d83d020bb4163895ec4d6d0ea8
+    version: 1.17.2-build.1
+    url:     https://github.com/jhunt/k8s-boshrelease/releases/download/v1.17.2-build.1/k8s-1.17.2-build.1.tgz
+    sha1:    891e6e0a64fcf98162b226a6b977fd470e6a0fdb
